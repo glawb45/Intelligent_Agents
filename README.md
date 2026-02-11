@@ -1,100 +1,344 @@
-# Classical Planning: Tennis Point Construction
+# Tennis Point Planning Domain
 
-## Overview
+## Part 1: Domain Selection & Description
 
-This project implements an AI planner for tennis strategy using STRIPS (Stanford Research Institute Problem Solver) planning. The system finds optimal sequences of shots to win tennis points by modeling the game as a classical planning problem.
+### Real-world Scenario
+This domain models a **tennis point planning strategy** for an amateur-professional tennis player. Players use many different tactics to attempt to win points, of which of those shot types and court states I define further below.
 
-## Files Included
+### Entities in Domain
 
-1. **tennis_planning_domain.md** - Complete written documentation (Parts 1 & 2)
-   - Domain description and motivation
-   - STRIPS formalization with predicates and action schemas
-   - Example problem instances with expected solutions
+1. **Players**
+    - Player (my perspective)
+    - Opponent
 
-2. **tennis_planner.py** - Python implementation (Part 3)
-   - Domain definition with 6 main action types
-   - Planning algorithms (BFS and A* with goal-count heuristic)
-   - 4 diverse problem instances demonstrating different strategies
+2. **Court Positions**:
+    - BaselineLeft
+    - BaselineCenter
+    - BaselineRight
+    - NetLeft
+    - NetCenter
+    - NetRight
 
-3. **tennis_output.txt** - Sample execution output showing planner results
+3. **Shot Types**:
+    - Crosscourt
+    - DownTheLine
+    - DropShot
+    - Lob
+    - Volley
 
-## Domain Summary
+4. **Court State**:
+    - Ball possession
+    - Player positions
+    - Court openings (which side of court is vulnerable)
 
-### Actions (6 types)
-1. **HitCrosscourt** - Diagonal shot to move opponent side-to-side
-2. **HitDownTheLine** - Straight shot to open court (finishes point)
-3. **ApproachNet** - Move to net after deep shot
-4. **HitVolley** - Volley winner at the net
-5. **HitDropShot** - Soft shot to catch opponent off balance
-6. **HitLob** - High shot over opponent's head
-7. **HitWideAngle** - Extreme angle shot to tire opponent
-8. **ReceiveReturn** - Get ball back after opponent's return
+### Objective
 
-### Problem Instances
+**Tennis player attempts to win point using different tactics:**
+    - Move opponent out of position
+    - Create open court space
+    - Execute shot opponent cannot return
+    - Force error from opponent
 
-**Problem 1: Basic Rally to Winner**
-- Strategy: Move opponent → Create opening → Hit winner
-- Plan length: 3 steps
-- A* efficiency: 21% fewer states explored than BFS
+Ex. A player can have a long crosscourt rally with the opponent, and eventually hit a down-the-line shot to offset the play and hit a winner.
 
-**Problem 2: Approach and Volley**
-- Strategy: Deep shot → Approach net → Volley winner
-- Plan length: 4 steps
-- A* efficiency: 14% fewer states explored than BFS
+### Why is planning needed?
 
-**Problem 3: Lob Over Net Player**
-- Strategy: Lob to push back net player → Hit winner
-- Plan length: 3 steps
-- A* efficiency: 65% fewer states explored than BFS (most efficient!)
+Reflex agents are unable to detect complex changes in states and conditional dependencies.
 
-**Problem 4: Run Them Wide then Drop Shot**
-- Strategy: Tire opponent with wide shot → Drop shot winner
-- Plan length: 3 steps
-- A* efficiency: 42% fewer states explored than BFS
+1. **Conditional shots**: Opponents are thinking 2 shots ahead. How can you move them out of position and utilize the open court?
 
-## How to Run
+2. **Position constraints**: A player must be, for example, at the net in order to hit a net point.
 
-```bash
-python tennis_planner.py
-```
-
-The planner will run all 4 problem instances and compare BFS vs A* search efficiency.
-
-## Key Results
-
-The A* heuristic search consistently outperforms breadth-first search:
-- Average efficiency improvement: ~35% fewer states explored
-- Best case (Problem 3): 65% fewer states explored
-- All problems find optimal plans
-
-## Why This Domain Works Well
-
-✅ **NOT Blocks World** - Completely different domain (sports strategy)
-✅ **3-4+ distinct actions** - 6 main action types with multiple instances
-✅ **Interesting state space** - Player positions, court geometry, ball possession
-✅ **Real-world application** - Models actual professional tennis strategy
-✅ **Planning required** - Can't just "hit winners" - need setup shots first
-
-## Technical Details
-
-- **Language**: Python 3
-- **Planning approach**: Forward state-space search
-- **Heuristic**: Goal-count (number of unsatisfied goal predicates)
-- **Data structures**: Sets for states, heapq for A* priority queue
-- **Search algorithms**: BFS (baseline) and A* (heuristic-guided)
-
-## Assignment Compliance
-
-This project satisfies all requirements:
-- ✅ Part 1: Domain description with real-world scenario
-- ✅ Part 2: STRIPS formalization with predicates and action schemas  
-- ✅ Part 3: Python implementation with working planner
-- ✅ Demonstrates both BFS and A* search
-- ✅ Multiple problem instances with varying difficulty
-- ✅ Clear performance comparisons
+3. **State transitions**: Each shot changes the state to enable or disable future actions. Planning is needed to find the right sequence.
 
 ---
 
-**Author**: AI Planning Student
-**Course**: AI Planning Assignment
-**Date**: February 2026
+## Part 2: STRIPS Formalization
+
+### Predicates/Fluents
+
+```
+At(entity, position)           - Entity is at a court position
+                                 Examples: At(Player, BaselineCenter), At(Opponent, NetLeft)
+
+HasBall(entity)                - Entity currently has ball control
+                                 Examples: HasBall(Player), HasBall(Opponent)
+
+CourtOpen(side)                - A side of the court is open/vulnerable
+                                 Values: CourtOpen(Left), CourtOpen(Right)
+
+OpponentOffBalance             - Opponent is out of position or struggling
+
+AtNet(entity)                  - Entity is positioned at the net
+                                 Examples: AtNet(Player), AtNet(Opponent)
+
+DeepShot                       - Last shot was hit deep (gives time to approach)
+
+ShortBall                      - Ball is short/near the net
+
+PointWon                       - The point has been won (GOAL)
+```
+
+### Action Schemas
+
+#### Action 1: Crosscourt(from_pos, target)
+
+Hit a diagonal groundstroke to move opponent to opposite side.
+
+**Parameters**
+- from_pos: Where player is hitting from
+- target: Which side to target
+
+**Preconditions**
+
+```
+{At(Player, from_pos), HasBall(Player), NOT AtNet(PLayer)}
+```
+
+**Add Effects**
+
+```
+{HasBall(Opponent),
+At(Opponent, Baseline{target}),
+CourtOpen({opp_side})
+DeepShot}
+```
+
+**Delete Effects**
+
+```
+{HasBall(Player),
+ShortBall}
+```
+
+#### Action 2: DownTheLine(from_pos, target)
+
+Hit a down-the-line winner.
+
+**Parameters**
+- from_pos
+- target
+
+**Preconditions**
+
+```
+{At(Player, from_pos),
+HasBall(Player),
+CourtOpen(target)}
+```
+
+**Add Effects**
+
+```
+{PointWon}
+```
+
+**Delete Effects**
+
+```
+{HasBall(Player),
+CourtOpen(target)}
+```
+
+#### Action 3: ApproachNet()
+
+Approach the net and hit a winning shot.
+
+**Parameters**
+- None
+
+**Preconditions**
+
+```
+{HasBall(Opponent),
+DeepShot}
+```
+
+**Add Effects**
+
+```
+{AtNet(Player),
+At(Player, NetCenter)}
+```
+
+**Delete Effects**
+
+```
+{At(Player, BaselineCenter),
+At(Player, BaselineLeft),
+At(Player, BaselineRight)}
+```
+
+#### Action 4: Volley(target)
+
+Hit a volley winner (assume from net).
+
+**Parameters**
+- target
+
+**Preconditions**
+
+```
+{AtNet(Player),
+HasBall(Player),
+CourtOpen({target})}
+```
+
+**Add Effects**
+
+```
+{PointWon}
+```
+
+**Delete Effects**
+
+```
+{HasBall(Player),
+CourtOpen({target})}
+```
+
+#### Action 5: DropShot(from_pos)
+
+Hit a drop shot winner from anywhere on the court.
+
+**Parameters**
+- from_pos
+
+**Preconditions**
+
+```
+{At(Player, {from_pos}),
+HasBall(Player),
+OpponentOffBalance}
+```
+
+**Add Effects**
+
+```
+{ShortBall,
+PointWon}
+```
+
+**Delete Effects**
+
+```
+{HasBall(Player),
+DeepShot}
+```
+
+#### Action 6: Lob(from_pos)
+
+Lob the opposing player, assuming they are at the net and are pushed back to the baseline and lose the point.
+
+**Parameters**
+- from_pos
+
+**Preconditions**
+
+```
+{At(Player, {from_pos}),
+HasBall(Player),
+AtNet(Opponent)}
+```
+
+**Add Effects**
+
+```
+{HasBall(Opponent),
+At(Opponent, BaselineCenter),
+ourtOpen(Left),
+CourtOpen(Right),
+DeepShot}
+```
+
+**Delete Effects**
+
+```
+{HasBall(Player),
+AtNet(Opponent),
+At(Opponent, NetCenter)}
+```
+
+#### Action 7: ReceiveReturn()
+
+Lob the opposing player, assuming they are at the net and are pushed back to the baseline and lose the point.
+
+**Parameters**
+- None
+
+**Preconditions**
+
+```
+{HasBall(Opponent)}
+```
+
+**Add Effects**
+
+```
+{HasBall(Player)}
+```
+
+**Delete Effects**
+
+```
+{HasBall(Opponent)}
+```
+
+### Problem Instances
+
+#### P1: Move Opponent, Hit DTL Winner
+
+**Initial State**:
+
+```python
+{
+    "At(Player, BaselineCenter)",
+    "At(Opponent, BaselineCenter)", 
+    "HasBall(Player)"
+}
+```
+
+**Goal State**:
+```python
+{
+    "PointWon"
+}
+```
+
+**Expected Plan** (one solution):
+1. Crosscourt(BaselineCenter, Right): Move opponent to right side
+2. DownTheLine(BaselineCenter, Left) - Hit backhand winner down the line (assuming right handed player)
+
+**Reasoning**: First shot creates open court, second shot puts point away.
+
+#### P2: Approach and Volley
+
+**Initial State**:
+
+```python
+{
+    "At(Player, BaselineCenter)",
+    "At(Opponent, BaselineRight)",
+    "HasBall(Player)",
+    "CourtOpen(Left)"
+}
+```
+
+**Goal State**:
+```python
+{
+    "PointWon"
+}
+```
+
+**Expected Plan** (one solution):
+1. Crosscourt(BaselineCenter, Right): Move opponent to right side
+2. ApproachNet(): Move to net while opponent retrieves
+3. Volley - Put volley away
+
+**Reasoning**: First shot gives time to approach, volley finish at net
+
+---
+
+# Part 3: Python Implementation
+
