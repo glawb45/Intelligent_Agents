@@ -342,4 +342,4 @@ Lob the opposing player, assuming they are at the net and are pushed back to the
 
 # Part 3: Python Implementation
 
-YouTube video for Python implementation walk-through: https://www.youtube.com/watch?v=pvf_Qv4rmLM&list=RDpvf_Qv4rmLM&start_radio=1
+YouTube video for Python implementation walk-through: ADD VIDEO
