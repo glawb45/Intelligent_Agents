@@ -1,0 +1,11 @@
+# LLM providers — install the one you're using (or both)
+openai>=1.30.0
+anthropic>=0.40.0
+
+# Tools
+ddgs>=0.1.0
+requests>=2.31.0
+
+# Server
+flask>=3.0.0
+python-dotenv>=1.0.0
