@@ -1,46 +1,40 @@
 """
-Trip Planner Agent — core agent loop.
-
-Supports both OpenAI and Anthropic backends.
-Set LLM_PROVIDER=openai or LLM_PROVIDER=anthropic in your .env (default: openai).
-
-No LangChain, CrewAI, or other agent frameworks used.
+Trip Planner Agent — core loop.
+Supports OpenAI (default) and Anthropic backends.
+Set LLM_PROVIDER=openai or anthropic in .env
 """
 
 import json
 import os
 from typing import Callable, Optional
-
 from tools import TOOL_DEFINITIONS, execute_tool
 
-SYSTEM_PROMPT = """You are an expert travel planner with deep knowledge of destinations worldwide.
-Your goal is to create detailed, realistic, day-by-day trip itineraries tailored to the user's preferences, budget, and travel dates.
+# Move this here so it loads in the main thread!
+from openai import OpenAI
 
-## Your Process
-1. **Understand the request**: Extract destination, dates/duration, budget, interests, travel party.
-2. **Research**: Use search_web to find top attractions, neighborhoods, food scenes, and insider tips.
-3. **Check weather**: Use get_weather_forecast so you can give packing tips and plan indoor/outdoor activities appropriately.
-4. **Dive into specifics**: Use get_place_details for key attractions the user should visit.
-5. **Validate budget**: Use estimate_travel_costs to confirm the itinerary is realistic for the given budget.
-6. **Synthesize**: Write a polished, practical itinerary.
+SYSTEM_PROMPT = """You are an expert travel planner. Create detailed, realistic day-by-day itineraries.
 
-## Itinerary Format
-- **Trip Overview**: Destination, dates, duration, budget summary
-- **Weather Summary**: What to expect and what to pack
-- **Day-by-Day Plan**: Morning / Afternoon / Evening for each day
-- **Budget Breakdown**: Estimated daily costs and total
+## Process
+1. Call search_web to find attractions, food, and tips for the destination
+2. Call get_weather_forecast if dates are given
+3. Call get_place_details for 1-2 key attractions
+4. Call estimate_travel_costs to validate the budget
+5. Write the full itinerary
+
+## Output Format
+- **Trip Overview**: destination, dates, duration, budget
+- **Weather**: what to expect, what to pack
+- **Day-by-Day**: Morning / Afternoon / Evening for each day with specific place names
+- **Budget Breakdown**: daily costs and trip total
 - **Pro Tips**: 3-5 insider tips
-- **Getting Around**: Transportation recommendations
+- **Getting Around**: transport advice
 
 ## Rules
-- ALWAYS call estimate_travel_costs to verify budget feasibility
-- ALWAYS call get_weather_forecast if dates are provided
-- Make recommendations specific (real place names, not generic suggestions)
-- Flag if the budget seems too tight and suggest adjustments
+- Always call estimate_travel_costs
+- Use real, specific place names
+- Keep tool calls to 5 or fewer total to stay fast
+- If search returns limited results, use your own knowledge — it's extensive
 """
-
-
-# ── OpenAI backend ────────────────────────────────────────────────
 
 
 def _openai_tool_defs():
@@ -59,71 +53,72 @@ def _openai_tool_defs():
 
 class OpenAIBackend:
     def __init__(self, model="gpt-4o"):
-        from openai import OpenAI
-
         self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         self.model = model
         self.tool_defs = _openai_tool_defs()
 
     def run(
-        self, user_message, on_tool_call=None, on_tool_result=None, max_iterations=12
+        self, user_message, on_tool_call=None, on_tool_result=None, max_iterations=10
     ):
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
         ]
         tool_call_log = []
-        iteration = 0
 
-        while iteration < max_iterations:
-            iteration += 1
-
+        for iteration in range(max_iterations):
+            print(f"[openai] Iteration {iteration+1}, messages={len(messages)}")
             response = self.client.chat.completions.create(
                 model=self.model,
                 max_tokens=4096,
                 tools=self.tool_defs,
                 messages=messages,
+                timeout=60,
             )
 
             choice = response.choices[0]
             msg = choice.message
-            messages.append(msg)
 
-            # Done — no more tool calls
+            # Change this line! If you just append(msg), the OpenAI SDK will
+            # crash when trying to validate an empty content field.
+            messages.append(msg.model_dump(exclude_unset=True))
+
+            print(
+                f"[openai] finish_reason={choice.finish_reason}, tool_calls={bool(msg.tool_calls)}"
+            )
+
             if choice.finish_reason == "stop" or not msg.tool_calls:
                 return {
                     "itinerary": msg.content or "",
                     "tool_calls": tool_call_log,
-                    "iterations": iteration,
+                    "iterations": iteration + 1,
                     "error": None,
                 }
 
-            # Execute tool calls
             for tc in msg.tool_calls:
                 tool_name = tc.function.name
                 tool_input = json.loads(tc.function.arguments)
+                print(f"[openai] Calling tool: {tool_name}")
 
                 if on_tool_call:
                     on_tool_call(tool_name, tool_input)
-                print(f"Tool called: {tool_name} | Input: {str(tool_input)[:80]}")
-                result = execute_tool(tool_name, tool_input)
-                print(f"Tool done: {tool_name} | Success: {result.get('success')}")
 
                 result = execute_tool(tool_name, tool_input)
+                print(
+                    f"[openai] Tool done: {tool_name} success={result.get('success')}"
+                )
 
                 if on_tool_result:
                     on_tool_result(tool_name, result)
 
                 tool_call_log.append(
                     {
-                        "iteration": iteration,
+                        "iteration": iteration + 1,
                         "tool": tool_name,
                         "input": tool_input,
                         "success": result.get("success", True),
-                        "result_preview": json.dumps(result)[:300],
                     }
                 )
-
                 messages.append(
                     {
                         "role": "tool",
@@ -135,121 +130,33 @@ class OpenAIBackend:
         return {
             "itinerary": "",
             "tool_calls": tool_call_log,
-            "iterations": iteration,
-            "error": f"Agent hit max iterations ({max_iterations})",
+            "iterations": max_iterations,
+            "error": "Max iterations reached",
         }
 
 
-# ── Anthropic backend ─────────────────────────────────────────────
+class GeminiBackend(OpenAIBackend):
+    # 👇 Change the model string right here
+    def __init__(self, model="gemini-2.5-flash"):
+        from openai import OpenAI
 
-
-class AnthropicBackend:
-    def __init__(self, model="claude-sonnet-4-6"):
-        import anthropic
-
-        self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        self.client = OpenAI(
+            api_key=os.environ.get("GEMINI_API_KEY"),
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+        )
         self.model = model
-
-    def run(
-        self, user_message, on_tool_call=None, on_tool_result=None, max_iterations=12
-    ):
-        messages = [{"role": "user", "content": user_message}]
-        tool_call_log = []
-        iteration = 0
-
-        while iteration < max_iterations:
-            iteration += 1
-
-            response = self.client.messages.create(
-                model=self.model,
-                max_tokens=4096,
-                system=SYSTEM_PROMPT,
-                tools=TOOL_DEFINITIONS,
-                messages=messages,
-            )
-
-            messages.append({"role": "assistant", "content": response.content})
-
-            if response.stop_reason == "end_turn":
-                final_text = next(
-                    (b.text for b in response.content if hasattr(b, "text")), ""
-                )
-                return {
-                    "itinerary": final_text,
-                    "tool_calls": tool_call_log,
-                    "iterations": iteration,
-                    "error": None,
-                }
-
-            if response.stop_reason == "tool_use":
-                tool_result_blocks = []
-                for block in response.content:
-                    if block.type != "tool_use":
-                        continue
-                    tool_name, tool_input = block.name, block.input
-
-                    if on_tool_call:
-                        on_tool_call(tool_name, tool_input)
-
-                    result = execute_tool(tool_name, tool_input)
-
-                    if on_tool_result:
-                        on_tool_result(tool_name, result)
-
-                    tool_call_log.append(
-                        {
-                            "iteration": iteration,
-                            "tool": tool_name,
-                            "input": tool_input,
-                            "success": result.get("success", True),
-                            "result_preview": json.dumps(result)[:300],
-                        }
-                    )
-
-                    tool_result_blocks.append(
-                        {
-                            "type": "tool_result",
-                            "tool_use_id": block.id,
-                            "content": json.dumps(result),
-                        }
-                    )
-
-                messages.append({"role": "user", "content": tool_result_blocks})
-                continue
-
-            break
-
-        return {
-            "itinerary": "",
-            "tool_calls": tool_call_log,
-            "iterations": iteration,
-            "error": f"Agent stopped unexpectedly after {iteration} iterations",
-        }
-
-
-# ── Unified agent — picks backend from LLM_PROVIDER env var ──────
+        self.tool_defs = _openai_tool_defs()
 
 
 class TripPlannerAgent:
     def __init__(self):
         provider = os.environ.get("LLM_PROVIDER", "openai").lower()
-        if provider == "anthropic":
-            model = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-6")
-            self.backend = AnthropicBackend(model=model)
-            self.provider = "anthropic"
+        if provider == "gemini":
+            self.backend = GeminiBackend()
         else:
-            model = os.environ.get("OPENAI_MODEL", "gpt-4o")
-            self.backend = OpenAIBackend(model=model)
-            self.provider = "openai"
+            self.backend = OpenAIBackend(os.environ.get("OPENAI_MODEL", "gpt-4o"))
 
-    def run(
-        self,
-        user_message: str,
-        on_tool_call: Optional[Callable[[str, dict], None]] = None,
-        on_tool_result: Optional[Callable[[str, dict], None]] = None,
-    ) -> dict:
+    def run(self, user_message: str, on_tool_call=None, on_tool_result=None) -> dict:
         return self.backend.run(
-            user_message,
-            on_tool_call=on_tool_call,
-            on_tool_result=on_tool_result,
+            user_message, on_tool_call=on_tool_call, on_tool_result=on_tool_result
         )
