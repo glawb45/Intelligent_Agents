@@ -1,7 +1,7 @@
 """
 Trip Planner Agent — core loop.
-Supports OpenAI (default) and Anthropic backends.
-Set LLM_PROVIDER=openai or anthropic in .env
+Supports OpenAI backend
+Set LLM_PROVIDER=openai in .env
 """
 
 import json
@@ -9,7 +9,6 @@ import os
 from typing import Callable, Optional
 from tools import TOOL_DEFINITIONS, execute_tool
 
-# Move this here so it loads in the main thread!
 from openai import OpenAI
 
 SYSTEM_PROMPT = """You are an expert travel planner. Create detailed, realistic day-by-day itineraries.
@@ -79,8 +78,6 @@ class OpenAIBackend:
             choice = response.choices[0]
             msg = choice.message
 
-            # Change this line! If you just append(msg), the OpenAI SDK will
-            # crash when trying to validate an empty content field.
             messages.append(msg.model_dump(exclude_unset=True))
 
             print(
