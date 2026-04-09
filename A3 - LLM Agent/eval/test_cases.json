@@ -1,115 +1,26 @@
 [
   {
-    "id": 1,
-    "input": "3 days in Paris, $150/day budget, interested in art and food, solo traveler",
-    "constraints": {
-      "destination": "Paris",
-      "num_days": 3,
-      "daily_budget_usd": 150,
-      "interests": ["art", "food"],
-      "travel_party": "solo"
-    }
+    "id": "tc1_tokyo_budget",
+    "prompt": "5 days in Tokyo starting 2025-04-01, $200/day, first-time visitor, love food and pop culture",
+    "expected_destination": "Tokyo",
+    "expected_days": 5
   },
   {
-    "id": 2,
-    "input": "5 days in Tokyo starting 2025-04-01, $200/day, first-time visitor, love food and pop culture",
-    "constraints": {
-      "destination": "Tokyo",
-      "num_days": 5,
-      "daily_budget_usd": 200,
-      "interests": ["food", "pop culture"],
-      "start_date": "2025-04-01",
-      "travel_party": "solo"
-    }
+    "id": "tc2_paris_luxury",
+    "prompt": "3 days in Paris starting June 10 2025, $800/day, art lover, solo traveler",
+    "expected_destination": "Paris",
+    "expected_days": 3
   },
   {
-    "id": 3,
-    "input": "1 week in Bali, $100/day, couple trip, temples, beaches, and wellness",
-    "constraints": {
-      "destination": "Bali",
-      "num_days": 7,
-      "daily_budget_usd": 100,
-      "interests": ["temples", "beaches", "wellness"],
-      "travel_party": "couple"
-    }
+    "id": "tc3_bali_wellness",
+    "prompt": "1 week in Bali, $100/day, couple, interested in temples, beaches, and wellness",
+    "expected_destination": "Bali",
+    "expected_days": 7
   },
   {
-    "id": 4,
-    "input": "4 days in NYC, $250/day, family with kids, first time visiting, want iconic sights",
-    "constraints": {
-      "destination": "New York",
-      "num_days": 4,
-      "daily_budget_usd": 250,
-      "interests": ["iconic sights", "family-friendly"],
-      "travel_party": "family"
-    }
-  },
-  {
-    "id": 5,
-    "input": "2 days in Barcelona, $120/day, architecture enthusiast, traveling solo",
-    "constraints": {
-      "destination": "Barcelona",
-      "num_days": 2,
-      "daily_budget_usd": 120,
-      "interests": ["architecture"],
-      "travel_party": "solo"
-    }
-  },
-  {
-    "id": 6,
-    "input": "10 days in Thailand starting 2025-12-20, $80/day, backpacker style, beaches and nightlife",
-    "constraints": {
-      "destination": "Thailand",
-      "num_days": 10,
-      "daily_budget_usd": 80,
-      "interests": ["beaches", "nightlife"],
-      "travel_party": "solo",
-      "start_date": "2025-12-20"
-    }
-  },
-  {
-    "id": 7,
-    "input": "3 days in Rome, $180/day, history lover, couple, first time in Italy",
-    "constraints": {
-      "destination": "Rome",
-      "num_days": 3,
-      "daily_budget_usd": 180,
-      "interests": ["history"],
-      "travel_party": "couple"
-    }
-  },
-  {
-    "id": 8,
-    "input": "5 days in Lisbon, $100/day, foodie and wine lover, solo traveler",
-    "constraints": {
-      "destination": "Lisbon",
-      "num_days": 5,
-      "daily_budget_usd": 100,
-      "interests": ["food", "wine"],
-      "travel_party": "solo"
-    }
-  },
-  {
-    "id": 9,
-    "input": "7 days in Berlin starting 2025-08-01, $130/day, music and nightlife enthusiast, couple",
-    "constraints": {
-      "destination": "Berlin",
-      "num_days": 7,
-      "daily_budget_usd": 130,
-      "interests": ["music", "nightlife"],
-      "travel_party": "couple",
-      "start_date": "2025-08-01"
-    }
-  },
-  {
-    "id": 10,
-    "input": "4 days in Amsterdam, $160/day, art and cycling lover, solo traveler",
-    "constraints": {
-      "destination": "Amsterdam",
-      "num_days": 4,
-      "daily_budget_usd": 160,
-      "interests": ["art", "cycling"],
-      "travel_party": "solo"
-    }
+    "id": "tc4_nyc_family",
+    "prompt": "4 days in NYC, $250/day, with kids aged 8 and 11, first time visiting",
+    "expected_destination": "New York",
+    "expected_days": 4
   }
 ]

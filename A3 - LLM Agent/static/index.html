@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bon Voyage — AI Trip Planner</title>
+    <style>
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            background-color: #f8f5f0; 
+            color: #333; 
+            margin: 0; 
+            display: flex; 
+            height: 100vh;
+        }
+        #sidebar { 
+            width: 350px; 
+            background-color: #ebdnc6; /* Matches your UI screenshot */
+            background: rgba(235, 225, 205, 0.5);
+            padding: 30px; 
+            border-right: 1px solid #ddd; 
+            overflow-y: auto;
+        }
+        #main { 
+            flex-grow: 1; 
+            padding: 50px; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+        }
+        h1 { font-weight: normal; margin-top: 0; }
+        textarea { 
+            width: 100%; 
+            height: 120px; 
+            padding: 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 8px; 
+            resize: vertical; 
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        button { 
+            background-color: #a68a7e; 
+            color: white; 
+            border: none; 
+            padding: 15px; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            width: 100%;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        button:hover { background-color: #8c7366; }
+        .log-entry { margin: 8px 0; font-family: monospace; font-size: 0.85em; color: #555;}
+        
+        #result-container { 
+            max-width: 800px; 
+            width: 100%; 
+            background: white; 
+            padding: 40px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
+            display: none; 
+            line-height: 1.6;
+            white-space: pre-wrap; /* Preserves LLM formatting */
+        }
+        #loading { 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100%; 
+            color: #888;
+        }
+        .spinner { 
+            border: 3px solid rgba(0,0,0,0.1); 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            border-left-color: #a68a7e; 
+            animation: spin 1s linear infinite; 
+            margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h1>Bon Voyage</h1>
+        <p>Plan your next adventure.</p>
+        <p style="font-size: 0.9em; color: #666;">Describe your dream trip — destination, dates, budget, and interests.</p>
+        
+        <textarea id="prompt" placeholder="e.g., 3 days in Paris starting June 10 2025, $150/day, art lover, solo traveler"></textarea>
+        <button id="planBtn">PLANNING...</button>
+        
+        <div style="margin-top: 30px;">
+            <strong style="font-size: 0.8em; letter-spacing: 1px; color: #888;">AGENT ACTIVITY</strong>
+            <div id="logs" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+    <div id="main">
+        <div id="loading">
+            <div class="spinner"></div>
+            <div>Researching your trip...</div>
+        </div>
+        <div id="result-container"></div>
+    </div>
+
+    <script>
+        document.getElementById('planBtn').addEventListener('click', async () => {
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) return;
+
+            // Reset UI
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('result-container').style.display = 'none';
+            document.getElementById('result-container').textContent = '';
+            const logs = document.getElementById('logs');
+            logs.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: prompt })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n\n');
+                    buffer = lines.pop(); // Keep incomplete chunks in the buffer
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const event = JSON.parse(line.slice(6));
+                            
+                            if (event.type === 'tool_call') {
+                                logs.innerHTML += `<div class="log-entry">⚙️ Calling <b>${event.tool}</b></div>`;
+                            } else if (event.type === 'tool_result') {
+                                const status = event.success ? '✅ Success' : '❌ Failed';
+                                logs.innerHTML += `<div class="log-entry" style="margin-left: 20px;">↳ ${status}</div>`;
+                            } else if (event.type === 'complete') {
+                                document.getElementById('loading').style.display = 'none';
+                                document.getElementById('result-container').style.display = 'block';
+                                document.getElementById('result-container').textContent = event.itinerary;
+                                logs.innerHTML += `<div class="log-entry">✨ <b>Trip planned!</b> (${event.iterations} steps)</div>`;
+                            } else if (event.type === 'error') {
+                                document.getElementById('loading').style.display = 'none';
+                                alert('Agent Error: ' + event.message);
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                alert('Connection failed: ' + e.message);
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
