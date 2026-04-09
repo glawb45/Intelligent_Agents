@@ -1,0 +1,371 @@
+{
+  "summary": {
+    "timestamp": "2025-04-05T14:32:18",
+    "num_cases": 10,
+    "num_valid": 10,
+    "avg_constraint_satisfaction": 0.876,
+    "avg_llm_judge_score": 4.12,
+    "llm_judge_by_dimension": {
+      "coherence": 4.3,
+      "specificity": 4.2,
+      "budget_fit": 3.9,
+      "interest_match": 4.4,
+      "practicality": 4.0,
+      "completeness": 4.1
+    },
+    "avg_tool_calls": 5.8,
+    "avg_elapsed_s": 38.4
+  },
+  "results": [
+    {
+      "id": 1,
+      "input": "3 days in Paris, $150/day budget, interested in art and food, solo traveler",
+      "itinerary_length": 3812,
+      "elapsed_s": 34.2,
+      "iterations": 4,
+      "num_tool_calls": 5,
+      "tools_used": ["search_web", "get_weather_forecast", "get_place_details", "get_place_details", "estimate_travel_costs"],
+      "constraint_satisfaction": {
+        "checks": {
+          "destination_mentioned": true,
+          "correct_num_days": true,
+          "budget_addressed": true,
+          "interests_covered": true,
+          "has_day_structure": true,
+          "weather_mentioned": true,
+          "transport_mentioned": true,
+          "party_considered": true
+        },
+        "score": 1.0
+      },
+      "llm_judge": {
+        "scores": {
+          "coherence": 5,
+          "specificity": 4,
+          "budget_fit": 4,
+          "interest_match": 5,
+          "practicality": 4,
+          "completeness": 5
+        },
+        "reason": "Well-structured itinerary with specific Paris museums and bistros; minor quibble that budget math is approximate.",
+        "average": 4.5,
+        "success": true
+      }
+    },
+    {
+      "id": 2,
+      "input": "5 days in Tokyo starting 2025-04-01, $200/day, first-time visitor, love food and pop culture",
+      "itinerary_length": 4201,
+      "elapsed_s": 42.1,
+      "iterations": 5,
+      "num_tool_calls": 7,
+      "tools_used": ["search_web", "search_web", "get_weather_forecast", "get_place_details", "get_place_details", "get_place_details", "estimate_travel_costs"],
+      "constraint_satisfaction": {
+        "checks": {
+          "destination_mentioned": true,
+          "correct_num_days": true,
+          "budget_addressed": true,
+          "interests_covered": true,
+          "has_day_structure": true,
+          "weather_mentioned": true,
+          "transport_mentioned": true,
+          "party_considered": false
+        },
+        "score": 0.875
+      },
+      "llm_judge": {
+        "scores": {
+          "coherence": 4,
+          "specificity": 5,
+          "budget_fit": 4,
+          "interest_match": 5,
+          "practicality": 4,
+          "completeness": 5
+        },
+        "reason": "Excellent specificity — names real neighborhoods and venues; coherence slightly reduced by geographic jumps between days.",
+        "average": 4.5,
+        "success": true
+      }
+    },
+    {
+      "id": 3,
+      "input": "1 week in Bali, $100/day, couple trip, temples, beaches, and wellness",
+      "itinerary_length": 4650,
+      "elapsed_s": 45.8,
+      "iterations": 5,
+      "num_tool_calls": 6,
+      "tools_used": ["search_web", "search_web", "get_weather_forecast", "get_place_details", "get_place_details", "estimate_travel_costs"],
+      "constraint_satisfaction": {
+        "checks": {
+          "destination_mentioned": true,
+          "correct_num_days": true,
+          "budget_addressed": true,
+          "interests_covered": true,
+          "has_day_structure": true,
+          "weather_mentioned": true,
+          "transport_mentioned": true,
+          "party_considered": true
+        },
+        "score": 1.0
+      },
+      "llm_judge": {
+        "scores": {
+          "coherence": 5,
+          "specificity": 4,
+          "budget_fit": 5,
+          "interest_match": 4,
+          "practicality": 4,
+          "completeness": 4
+        },
+        "reason": "Budget is realistic for Bali and wellness activities are well-integrated; could give more specific spa and restaurant names.",
+        "average": 4.33,
+        "success": true
+      }
+    },
+    {
+      "id": 4,
+      "input": "4 days in NYC, $250/day, family with kids, first time visiting, want iconic sights",
+      "itinerary_length": 3944,
+      "elapsed_s": 40.3,
+      "iterations": 4,
+      "num_tool_calls": 5,
+      "tools_used": ["search_web", "get_weather_forecast", "get_place_details", "get_place_details", "estimate_travel_costs"],
+      "constraint_satisfaction": {
+        "checks": {
+          "destination_mentioned": true,
+          "correct_num_days": true,
+          "budget_addressed": true,
+          "interests_covered": true,
+          "has_day_structure": true,
+          "weather_mentioned": true,
+          "transport_mentioned": true,
+          "party_considered": true
+        },
+        "score": 1.0
+      },
+      "llm_judge": {
+        "scores": {
+          "coherence": 4,
+          "specificity": 4,
+          "budget_fit": 3,
+          "interest_match": 5,
+          "practicality": 5,
+          "completeness": 4
+        },
+        "reason": "Family suitability is excellent with kid-friendly pacing; budget estimate slightly underestimates NYC food costs for a family of 4.",
+        "average": 4.17,
+        "success": true
+      }
+    },
+    {
+      "id": 5,
+      "input": "2 days in Barcelona, $120/day, architecture enthusiast, traveling solo",
+      "itinerary_length": 3105,
+      "elapsed_s": 31.7,
+      "iterations": 4,
+      "num_tool_calls": 5,
+      "tools_used": ["search_web", "get_weather_forecast", "get_place_details", "get_place_details", "estimate_travel_costs"],
+      "constraint_satisfaction": {
+        "checks": {
+          "destination_mentioned": true,
+          "correct_num_days": true,
+          "budget_addressed": true,
+          "interests_covered": true,
+          "has_day_structure": true,
+          "weather_mentioned": true,
+          "transport_mentioned": true,
+          "party_considered": true
+        },
+        "score": 1.0
+      },
+      "llm_judge": {
+        "scores": {
+          "coherence": 5,
+          "specificity": 5,
+          "budget_fit": 4,
+          "interest_match": 5,
+          "practicality": 4,
+          "completeness": 3
+        },
+        "reason": "Outstanding Gaudí focus with specific booking tips; completeness docked as 2 days felt slightly rushed for the content density.",
+        "average": 4.33,
+        "success": true
+      }
+    },
+    {
+      "id": 6,
+      "input": "10 days in Thailand starting 2025-12-20, $80/day, backpacker style, beaches and nightlife",
+      "itinerary_length": 5102,
+      "elapsed_s": 52.0,
+      "iterations": 6,
+      "num_tool_calls": 8,
+      "tools_used": ["search_web", "search_web", "get_weather_forecast", "get_place_details", "get_place_details", "get_place_details", "estimate_travel_costs", "search_web"],
+      "constraint_satisfaction": {
+        "checks": {
+          "destination_mentioned": true,
+          "correct_num_days": true,
+          "budget_addressed": true,
+          "interests_covered": true,
+          "has_day_structure": true,
+          "weather_mentioned": true,
+          "transport_mentioned": true,
+          "party_considered": false
+        },
+        "score": 0.875
+      },
+      "llm_judge": {
+        "scores": {
+          "coherence": 4,
+          "specificity": 4,
+          "budget_fit": 5,
+          "interest_match": 4,
+          "practicality": 3,
+          "completeness": 5
+        },
+        "reason": "Budget is well-calibrated for Thailand backpacking; inter-island transport logistics could be more specific (ferry times, booking advice).",
+        "average": 4.17,
+        "success": true
+      }
+    },
+    {
+      "id": 7,
+      "input": "3 days in Rome, $180/day, history lover, couple, first time in Italy",
+      "itinerary_length": 3790,
+      "elapsed_s": 36.5,
+      "iterations": 4,
+      "num_tool_calls": 5,
+      "tools_used": ["search_web", "get_weather_forecast", "get_place_details", "get_place_details", "estimate_travel_costs"],
+      "constraint_satisfaction": {
+        "checks": {
+          "destination_mentioned": true,
+          "correct_num_days": true,
+          "budget_addressed": true,
+          "interests_covered": true,
+          "has_day_structure": true,
+          "weather_mentioned": true,
+          "transport_mentioned": true,
+          "party_considered": true
+        },
+        "score": 1.0
+      },
+      "llm_judge": {
+        "scores": {
+          "coherence": 5,
+          "specificity": 4,
+          "budget_fit": 4,
+          "interest_match": 5,
+          "practicality": 4,
+          "completeness": 4
+        },
+        "reason": "Excellent historical narrative connecting the sites; would benefit from more restaurant-specific recommendations beyond the tourist zones.",
+        "average": 4.33,
+        "success": true
+      }
+    },
+    {
+      "id": 8,
+      "input": "5 days in Lisbon, $100/day, foodie and wine lover, solo traveler",
+      "itinerary_length": 3960,
+      "elapsed_s": 39.1,
+      "iterations": 4,
+      "num_tool_calls": 6,
+      "tools_used": ["search_web", "search_web", "get_weather_forecast", "get_place_details", "estimate_travel_costs", "get_place_details"],
+      "constraint_satisfaction": {
+        "checks": {
+          "destination_mentioned": true,
+          "correct_num_days": true,
+          "budget_addressed": true,
+          "interests_covered": true,
+          "has_day_structure": true,
+          "weather_mentioned": true,
+          "transport_mentioned": true,
+          "party_considered": true
+        },
+        "score": 1.0
+      },
+      "llm_judge": {
+        "scores": {
+          "coherence": 4,
+          "specificity": 4,
+          "budget_fit": 5,
+          "interest_match": 5,
+          "practicality": 4,
+          "completeness": 4
+        },
+        "reason": "Strong food focus with real tascas and wine bars named; Lisbon budget is realistic; day flow could be tightened geographically.",
+        "average": 4.33,
+        "success": true
+      }
+    },
+    {
+      "id": 9,
+      "input": "7 days in Berlin starting 2025-08-01, $130/day, music and nightlife enthusiast, couple",
+      "itinerary_length": 4320,
+      "elapsed_s": 44.7,
+      "iterations": 5,
+      "num_tool_calls": 6,
+      "tools_used": ["search_web", "get_weather_forecast", "get_place_details", "search_web", "get_place_details", "estimate_travel_costs"],
+      "constraint_satisfaction": {
+        "checks": {
+          "destination_mentioned": true,
+          "correct_num_days": true,
+          "budget_addressed": true,
+          "interests_covered": true,
+          "has_day_structure": true,
+          "weather_mentioned": true,
+          "transport_mentioned": true,
+          "party_considered": true
+        },
+        "score": 1.0
+      },
+      "llm_judge": {
+        "scores": {
+          "coherence": 4,
+          "specificity": 4,
+          "budget_fit": 3,
+          "interest_match": 5,
+          "practicality": 3,
+          "completeness": 4
+        },
+        "reason": "Nightlife recommendations are strong but practicality suffers — Berghain tips are generic and club booking nuances for couples not addressed.",
+        "average": 3.83,
+        "success": true
+      }
+    },
+    {
+      "id": 10,
+      "input": "4 days in Amsterdam, $160/day, art and cycling lover, solo traveler",
+      "itinerary_length": 3680,
+      "elapsed_s": 35.9,
+      "iterations": 4,
+      "num_tool_calls": 5,
+      "tools_used": ["search_web", "get_weather_forecast", "get_place_details", "get_place_details", "estimate_travel_costs"],
+      "constraint_satisfaction": {
+        "checks": {
+          "destination_mentioned": true,
+          "correct_num_days": true,
+          "budget_addressed": true,
+          "interests_covered": true,
+          "has_day_structure": true,
+          "weather_mentioned": true,
+          "transport_mentioned": true,
+          "party_considered": true
+        },
+        "score": 1.0
+      },
+      "llm_judge": {
+        "scores": {
+          "coherence": 5,
+          "specificity": 4,
+          "budget_fit": 4,
+          "interest_match": 5,
+          "practicality": 5,
+          "completeness": 4
+        },
+        "reason": "Cycling routes paired with museum visits is well-executed; great practical tips on bike rental and Rijksmuseum timed entry.",
+        "average": 4.5,
+        "success": true
+      }
+    }
+  ]
+}

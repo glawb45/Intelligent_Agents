@@ -7,9 +7,8 @@ import os
 import requests
 import concurrent.futures
 
-# ── Search ────────────────────────────────────────────────────────
 
-
+# Search the web using API
 def search_web(query: str, max_results: int = 5) -> dict:
     """
     Search the web. Uses Tavily if TAVILY_API_KEY is set, otherwise
@@ -58,9 +57,7 @@ def search_web(query: str, max_results: int = 5) -> dict:
     }
 
 
-# ── Weather ───────────────────────────────────────────────────────
-
-
+# Get the weather forecast
 def get_weather_forecast(city: str, start_date: str, end_date: str) -> dict:
     """
     Get weather forecast via Open-Meteo (free, no key needed).
@@ -141,9 +138,7 @@ def get_weather_forecast(city: str, start_date: str, end_date: str) -> dict:
         return {"success": False, "error": str(e), "forecast": []}
 
 
-# ── Place details ─────────────────────────────────────────────────
-
-
+# Determine place details, extracting long and lat to determine precise location
 def get_place_details(place_name: str, city: str) -> dict:
     """Lightweight place lookup — always returns quickly."""
 
@@ -180,9 +175,7 @@ def get_place_details(place_name: str, city: str) -> dict:
         return {"success": True, "place": {"name": place_name, "city": city}}
 
 
-# ── Cost estimator ────────────────────────────────────────────────
-
-
+# Estimate total travel cost – based on user input
 def estimate_travel_costs(
     destination: str,
     num_days: int,
@@ -190,6 +183,7 @@ def estimate_travel_costs(
     travel_style: str = "standard",
 ) -> dict:
     costs_db = {
+        # Example usages
         "tokyo": {
             "accommodation": {"budget": 40, "mid-range": 120, "luxury": 350},
             "food": {"budget": 20, "mid-range": 50, "luxury": 120},
@@ -333,8 +327,7 @@ def estimate_travel_costs(
     }
 
 
-# ── Registry ──────────────────────────────────────────────────────
-
+# Call tool functions
 TOOL_FUNCTIONS = {
     "search_web": search_web,
     "get_weather_forecast": get_weather_forecast,

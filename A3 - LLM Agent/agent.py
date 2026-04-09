@@ -50,6 +50,7 @@ def _openai_tool_defs():
     ]
 
 
+# Use OpenAI backend to support model
 class OpenAIBackend:
     def __init__(self, model="gpt-4o"):
         self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
@@ -132,6 +133,8 @@ class OpenAIBackend:
         }
 
 
+# Create a Gemini backend wrapper using the Open AI tools called above
+# We will use Gemini 2.5 Flash
 class GeminiBackend(OpenAIBackend):
     # 👇 Change the model string right here
     def __init__(self, model="gemini-2.5-flash"):
