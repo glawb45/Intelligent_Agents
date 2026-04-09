@@ -68,7 +68,7 @@ def run_evaluation(output_file="eval/results/run_results.json"):
             f"  -> Score: {score}/{max_score} | Tools used: {case_result['tool_calls_made']} | Time: {case_result['duration_seconds']}s\n"
         )
 
-        time.sleep(15)
+        time.sleep(25)
 
     # Save results
     with open(output_file, "w") as f:

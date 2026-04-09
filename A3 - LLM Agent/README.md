@@ -174,3 +174,9 @@ Results are saved to `eval/results/` as JSON files containing full itinerary tex
 - Python 3.10+
 - Gemini API key (Free Tier includes up to 500 requests per day)
 - Internet connection (for DuckDuckGo + Open-Meteo)
+
+---
+
+# Video
+
+[Video](https://youtu.be/mrzOqOV0cZw) walkthrough
