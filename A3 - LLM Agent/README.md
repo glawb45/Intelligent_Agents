@@ -179,4 +179,4 @@ Results are saved to `eval/results/` as JSON files containing full itinerary tex
 
 # Video
 
-[Video](https://youtu.be/mrzOqOV0cZw) walkthrough
+[Video walkthrough](https://youtu.be/mrzOqOV0cZw)
