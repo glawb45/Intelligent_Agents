@@ -73,10 +73,10 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
+# Edit .env and add your GEMINI_API_KEY
 ```
 
-> **Note:** Only `GEMINI-API-KEY` is required. Web search (DuckDuckGo) and weather (Open-Meteo) are both free and need no keys.
+> **Note:** Only `GEMINI_API_KEY` is required. Web search (DuckDuckGo) and weather (Open-Meteo) are both free and need no keys.
 
 ### 3. Run the web app
 
